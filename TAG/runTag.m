@@ -12,7 +12,7 @@ disp('Opened inlet: Classifier -> Matlab');
 result = dlmread('../NEDE_Game/objectLocs.txt',',');
 
 % we should change this order and probably read these in from a file
-image_types = {'schooner', 'grand_piano', 'car_side', 'laptop'};
+image_types = {'car_side', 'grand_piano', 'laptop','schooner'};
 
 objectList = cell(1,length(result));
 billboardIdList = zeros(1,length(result));
@@ -47,15 +47,18 @@ while true
             orderedScores(i+1) = outputScore(outputOrder == i);
        end
        % get the order of the rest of the b
+       
+       highProbTargets = outputOrder(outputScore > 0.9);
+       
        counter = 1;
        unseenOutputOrder = [];
        for i=1:length(orderedScores)
-           if ismember(outputOrder(i),target_indices)
+           if ismember(highProbTargets(i),target_indices)
                orderedScores(i) = 1;
-           elseif ismember(outputOrder(i), distractor_indices)
+           elseif ismember(highProbTargets(i), distractor_indices)
                orderedScores(i) = 0;
            else 
-               unseenOutputOrder(counter) = outputOrder(i);
+               unseenOutputOrder(counter) = highProbTargets(i);
                counter = counter + 1;
            end
        end    
@@ -63,6 +66,12 @@ while true
        
        dlmwrite('../NEDE_Game/interestScores.txt',orderedScores')
        
-       dlmwrite('../NEDE_Game/newCarPath.txt', unseenOutputOrder')
+       display = 1;
+       usegridconstraints = true;
+       billboardLocations = result(1:2,unseenOutputOrder+1);
+       
+       pathLocations = convertBillboardtoPathLocation(billboardLocations);
+       tspOutput = solveTSP(pathLocations, display, usegridconstraints);       
+       dlmwrite('../NEDE_Game/newCarPath.txt', horzcat(tspOutput,zeros(1,length(tspOutput))));
    end
 end
