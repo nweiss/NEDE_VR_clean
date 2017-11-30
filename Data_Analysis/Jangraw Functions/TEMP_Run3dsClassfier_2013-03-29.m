@@ -1,0 +1,112 @@
+% TEMP_Run3dsClasssifier_2013-03-29
+%
+% Created 3/29/13 by DJ (?)
+
+subject = 20;
+sessions = 1:12;
+binsamples = 276:25:476;
+binlength = 25; % in samples
+
+foo = load(sprintf('TEMP_ALLEEG%d',subject));
+ALLEEG = foo.(sprintf('ALLEEG%d',subject));
+EEGdist = ALLEEG(1);
+EEGtarg = ALLEEG(2);
+clear foo
+
+EEGtarg.icaact = [];
+EEGtarg.icaact = eeg_getica(EEGtarg);
+EEGdist.icaact = [];
+EEGdist.icaact = eeg_getica(EEGdist);
+
+%% Get classifier
+cv = setGroupedCrossValidationStruct('10fold',EEGdist,EEGtarg);
+[y,w,v,fwdModel] = run_rsvp_classifier_rawdata(EEGdist.icaact, EEGtarg.icaact,binlength,binsamples,cv);
+p = y';
+truth = [zeros(1,EEGdist.trials), ones(1,EEGtarg.trials)];
+
+%% Get results
+
+% load results and params, then...
+nTargets = sum(truth);
+nDistractors = numel(truth)-nTargets;
+trialNumbers = [1:nDistractors, 1:nTargets]; % the trial number (in EEG struct) for each element of p and truth
+
+% sort trials
+[~, order] = sort(p,1,'descend'); % sort trials in order of descending probability of being a target
+truth_ordered = truth(order); % sort the truth values the same way
+
+% get eeg-predicted targets by cropping these newly-sorted values
+n_eeg_pt = sum(y>mean(y)+2*std(y))
+if n_eeg_pt<5
+    n_eeg_pt = sum(y>mean(y)+1.64*std(y))
+end
+if n_eeg_pt<5
+    n_eeg_pt = sum(y>mean(y)+1*std(y))
+end
+order_eeg_pt = order(1:n_eeg_pt); % crop trial numbers
+truth_eeg_pt = truth_ordered(1:n_eeg_pt); % crop truth values
+
+% get eeg struct trial numbers of eeg predicted targets ("eeg_pt")
+iTargTrials_eeg_pt = trialNumbers(order_eeg_pt(truth_eeg_pt==1)); % get trial numbers in target EEG struct
+iDistTrials_eeg_pt = trialNumbers(order_eeg_pt(truth_eeg_pt~=1)); % get trial numbers in distractor EEG struct
+
+% get a list of the object numbers for the eeg trials
+[objects, objnames, objlocs, objtimes, objisessions] = GetObjectList(subject,sessions); % get a list of every object seen and its properties
+iObjects_targets = EpochToObjectNumber(ALLEEG(2),objtimes, objisessions); % Find the objects that were seen in the target EEG struct's trials
+iObjects_distractors = EpochToObjectNumber(ALLEEG(1),objtimes, objisessions); % Find the objects that were seen in the distractor EEG struct's trials
+
+% rerank with TAG
+iObjects_eeg_pt = [iObjects_targets(iTargTrials_eeg_pt) iObjects_distractors(iDistTrials_eeg_pt)]; % get object numbers of EEG predicted targtes
+newRanking = RerankObjectsWithTag(objnames,iObjects_eeg_pt); % feed these objects as inputs to TAG
+
+% get indices of TAG-predicted targets
+n_tag_pt = numel(objects)/4;
+iObjects_tag_pt = newRanking(1:n_tag_pt);
+
+%% Display
+
+% output some stats
+objistarget = strcmp('TargetObject',{objects(:).tag});
+pctCorrect_eeg_pt = sum(objistarget(iObjects_eeg_pt))/numel(iObjects_eeg_pt)*100;
+pctCorrect_tag_pt = sum(objistarget(iObjects_tag_pt))/numel(iObjects_tag_pt)*100;
+pctFound_eeg_pt = sum(objistarget(iObjects_eeg_pt))/sum(objistarget)*100;
+pctFound_tag_pt = sum(objistarget(iObjects_tag_pt))/sum(objistarget)*100;
+fprintf('Percent Correct -- EEG: %.1f, TAG: %.1f\n',pctCorrect_eeg_pt,pctCorrect_tag_pt);
+fprintf('Percent of Targets Found -- EEG: %.1f, TAG: %.1f\n',pctFound_eeg_pt,pctFound_tag_pt);
+% clear pct*
+
+
+%% Plot classifier results
+% figure;
+% imagesc(EEG.times(binsamples),1:size(w,1),mean(w,3))
+% colorbar
+% xlabel('bin start time');
+% ylabel('IC #');
+% title(sprintf('S%d spatial weights',subject));
+% 
+% figure;
+% plot(EEG.times(binsamples),squeeze(mean(v,3)))
+% xlabel('bin start time');
+% ylabel('mean bin weight');
+% title(sprintf('S%d temporal weights',subject))
+% 
+% figure;
+% foo0 = hist(y(truth==0),-15:15);
+% foo1 = hist(y(truth==1),-15:15);
+% plot(-15:15,foo0,'b');
+% hold on
+% plot(-15:15,foo1,'r');
+% PlotVerticalLines(mean(y)+[1, 1.64, 2]*std(y),'m:');
+% xlabel('y value');
+% ylabel('# trials');
+% legend('distractors','targets')
+% title(sprintf('S%d y values',subject))
+
+figure;
+plot(cumsum(truth_ordered)./(1:numel(truth_ordered)))
+hold on
+PlotVerticalLines([sum(y>mean(y)+1*std(y)), sum(y>mean(y)+1.64*std(y)), sum(y>mean(y)+2*std(y))],'m:');
+plot(get(gca,'xlim'),[0.25 0.25],'k--');
+xlabel('# trials included');
+ylabel('Precision of set');
+title(sprintf('S%d EEG precision',subject));

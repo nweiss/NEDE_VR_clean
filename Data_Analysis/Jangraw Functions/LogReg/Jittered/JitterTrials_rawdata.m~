@@ -1,0 +1,28 @@
+function [newdata,truejitter] = JitterTrials_rawdata(data,epochrange,jitterrange)
+
+% truejitter = JitterTrials_rawdata(data,jitterrange)
+%
+% INPUTS:
+% - data is a 3D matrix.
+% - epochrange is a 2-element vector (in samples).
+% - jitterrange is a 2-element vector (in samples).
+%
+% OUTPUTS:
+% - truejitter is a vector.
+%
+% Created 11/1/13 by DJ.
+
+% Get constants
+D = size(data,2); % # chans
+T = diff(epochrange); % # samples in NEW epochs
+N = size(data,3); % # of trials
+
+% Set up
+truejitter = jitterrange(1) + diff(jitterrange)*rand(1,N);
+newdata = nan(D,T,N);
+
+% Main loop
+for i=1:N
+    newsamples = truejitter(i) + (1:T);
+    newdata(:,:,i) = data(:,newsamples,i);
+end

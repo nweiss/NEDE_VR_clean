@@ -1,0 +1,134 @@
+% function TEMP_RunCroppedIca()
+
+subjects = 22:30;
+sessions_cell = {2:14, [3 6:17], 1:15, 1:15, 1:15, 1:15, 1:15, 1:15, [1:10 12:15]};
+offsets = [-12 -4 48 60 68 68 92 112 0];
+folders = {'2013-03-27-Pilot-S22', '2013-03-28-Pilot-S23', ...
+    '2013-04-29-Pilot-S24', '2013-05-01-Pilot-S25', '2013-05-02-Pilot-S26',...
+    '2013-05-03-Pilot-S27', '2013-05-07-Pilot-S28', '2013-05-10-Pilot-S29',...
+    '2013-05-15-Pilot-S30'};
+homedir = '/Users/dave/Documents/Data/3DSearch';
+vThresh = 75;
+
+%% RUN ICA
+for iSubject = 1:numel(subjects);
+    subject = subjects(iSubject);
+    offset = offsets(iSubject);
+    cd(homedir);
+    cd(folders{iSubject});
+    %%
+    EEG = pop_loadset('filename',sprintf('3DS-%d-all-filtered-noduds.set',subject));
+
+    %% Epoch data
+    epochwin = [0 1] + offset/1000; % in seconds
+    baselinewin = [0 100] + offset; % in ms
+    % baselinewin = [-100 0] + offset; % in ms
+
+    Numbers = GetNumbers;
+    sac2targ = num2str(Numbers.SACCADE_TO + Numbers.TARGET);
+    sac2dist = num2str(Numbers.SACCADE_TO + Numbers.DISTRACTOR);
+
+    EEG = pop_epoch( EEG, {sac2targ sac2dist}, epochwin, 'newname', [EEG.setname ' epochs'], 'epochinfo', 'yes');
+    EEG = pop_rmbase( EEG, baselinewin);% Remove baseline
+    EEG = eeg_checkset( EEG );
+
+    %% Enforce voltage threshold
+%     epochwin_artifactcheck = [0 1]*1000 + offset; % in ms
+%     % EEG = EnforceVoltageThreshold(EEG,vThresh);
+%     EEG = EnforceVoltageThreshold(EEG,vThresh,{sac2targ sac2dist},{},epochwin_artifactcheck,[]);
+%     EEG = pop_rejepoch(EEG,EEG.etc.rejectepoch,0);
+%     EEG.setname = sprintf('%s %duVThresh',EEG.setname, vThresh);
+
+    %% Run ICA
+    EEG = pop_runica(EEG, 'icatype','runica','dataset',1,'options',{'extended' 1});
+
+    %% SAVE RESULT
+    EEG = pop_saveset( EEG, 'filename',sprintf('3DS-%d-all-filtered-noduds-epoched-ica.set',subject),'filepath',cd);
+end
+
+
+%% IC CROPPING
+for iSubject = 1:numel(subjects)
+    subject = subjects(iSubject);
+    offset = offsets(iSubject);
+    cd(homedir);
+    cd(folders{iSubject});
+    
+    %% Load dataset
+    EEG = pop_loadset('filename',sprintf('3DS-%d-all-filtered-noduds.set',subject));
+    EEG_ica = pop_loadset('filename',sprintf('3DS-%d-all-filtered-noduds-epoched-ica.set',subject));
+    assignin('base','EEG_ica',EEG_ica);
+    
+    % Copy ICA info
+    EEG = pop_editset(EEG, 'icachansind', 'EEG_ica.icachansind', 'icaweights', 'EEG_ica.icaweights', 'icasphere', 'EEG_ica.icasphere');
+    EEG = eeg_checkset(EEG);
+    
+    %% Epoch data (big)
+    epochwin = [-1 2] + offset/1000; % in seconds
+    baselinewin = [0 100] + offset; % in ms
+    % baselinewin = [-100 0] + offset; % in ms
+
+    Numbers = GetNumbers;
+    sac2targ = num2str(Numbers.SACCADE_TO + Numbers.TARGET);
+    sac2dist = num2str(Numbers.SACCADE_TO + Numbers.DISTRACTOR);
+
+    EEG = pop_epoch( EEG, {sac2targ sac2dist}, epochwin, 'newname', [EEG.setname ' epochs'], 'epochinfo', 'yes');
+    EEG = pop_rmbase( EEG, baselinewin);% Remove baseline
+    EEG = eeg_checkset( EEG );
+ 
+    
+    %% Find eye components
+%     pop_topoplot(EEG,0, [1:20] ,EEG.setname,0 ,0,'electrodes','off'); % plot scalp maps
+%     pop_eegplot( EEG, 0, 1, 1); % plot component activations
+%     figure; pop_spectopo(EEG, 0, [0  EEG.pnts], 'EEG' , 'freq', [10], 'plotchan', 0, 'percent', 20, 'icacomps', [1:20], 'nicamaps', 5, 'freqrange',[2 25],'electrodes','off'); % plot spectra
+
+    %% Remove eye components
+    if subject==22
+        BadICs = 2; %10?
+    elseif subject==23
+        BadICs = 1; %2? 8?
+    elseif subject==24
+        BadICs = 1; %5? 11?
+    elseif subject==25
+        BadICs = 1; % 2:4? more?
+    elseif subject==26
+        BadICs = 1; %7? 9?
+    elseif subject==27
+        BadICs = 1;
+    elseif subject==28
+        BadICs = 1; %6? 10?
+    elseif subject==29
+        BadICs = 1; %2? 5:7?
+    elseif subject==30
+        BadICs = 1; %5? 10?
+    else
+        % plot figures to help user decide on bad ICs
+        pop_topoplot(EEG,0, [1:20] ,EEG.setname,0 ,0,'electrodes','off'); % plot scalp maps
+        pop_eegplot( EEG, 0, 1, 1); % plot component activations
+        figure; pop_spectopo(EEG, 0, [0  EEG.pnts], 'EEG' , 'freq', [10], 'plotchan', 0, 'percent', 20, 'icacomps', [1:20], 'nicamaps', 5, 'freqrange',[2 25],'electrodes','off'); % plot spectra
+        % ask user for bad ICs
+        BadICs = str2num(input('Input Bad Electrodes? >>','s'));
+    end
+    % BadICs = [1 2 4];
+    EEG = pop_subcomp( EEG, BadICs, 0);
+    BadIcString = sprintf('%d-',BadICs);
+    BadIcString(end) = [];
+    EEG.setname= sprintf('%s ICs_%s_Removed',EEG.setname, BadIcString);
+    EEG = eeg_checkset( EEG );
+
+    %% Enforce voltage threshold (small)
+    
+    epochwin_artifactcheck = [0 1]*1000 + offset; % in ms
+    % EEG = EnforceVoltageThreshold(EEG,vThresh);
+    EEG = EnforceVoltageThreshold(EEG,vThresh,{sac2targ sac2dist},{},epochwin_artifactcheck,[]);
+    EEG = pop_rejepoch(EEG,EEG.etc.rejectepoch,0);
+    EEG.setname = sprintf('%s %duVThresh',EEG.setname, vThresh);
+    
+    %% Separate targets & distractors
+    clear ALLEEG
+    ALLEEG(1) = pop_epoch( EEG, { sac2dist  }, epochwin, 'newname', sprintf('%s DistractorEpochs',EEG.setname), 'epochinfo', 'yes');
+    ALLEEG(2) = pop_epoch( EEG, { sac2targ  }, epochwin, 'newname', sprintf('%s TargetEpochs',EEG.setname), 'epochinfo', 'yes');
+    
+    % save(sprintf('TEMP_ALLEEG%s_old.mat',EEG.subject),'ALLEEG');
+    save(sprintf('ALLEEG%s_EpochedIcaCropped.mat',EEG.subject),'ALLEEG');
+end

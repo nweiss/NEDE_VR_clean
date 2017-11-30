@@ -1,0 +1,11 @@
+In this task, you will navigate through a 3-D environment using the arrow keys.
+
+<ENDPAGE>
+Whenever you see any <targetString> objects, press the SPACEBAR button.
+
+<ENDPAGE>
+The session will end automatically.  
+
+When you are ready to begin, click the button below.
+
+<ENDPAGE>

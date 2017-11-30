@@ -1,0 +1,155 @@
+; Installation inf for SMI HED5 Eye Camera
+;
+; (c) Copyright 2010 SensoMotoric Instruments GmbH
+;
+
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Image
+ClassGuid={6bdd1fc6-810f-11d0-bec7-08002be2092f}
+Provider=%SMI%
+DriverVer=04/11/2013,2.1.0.0
+CatalogFile.NTx86=SMI_NTx86.cat
+CatalogFile.NTamd64=SMI_NTx64.cat
+
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg     
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-20
+
+
+; ================= Device section =====================
+
+[Manufacturer]
+%MfgName%=SMI,NTx86,NTamd64,NTia64
+
+; For Win2K
+[SMI]
+%USB\VID_12C1&PID_0600.DeviceDesc%=SmiHed5Eye.Boot, USB\VID_12C1&PID_0600
+%USB\VID_12C1&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_12C1&PID_0601
+%USB\VID_28A3&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_28A3&PID_0601
+
+; For XP and later
+[SMI.NTx86]
+%USB\VID_12C1&PID_0600.DeviceDesc%=SmiHed5Eye.Boot, USB\VID_12C1&PID_0600
+%USB\VID_12C1&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_12C1&PID_0601
+%USB\VID_28A3&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_28A3&PID_0601
+
+; For XP and later, 64bit Intel
+[SMI.NTia64]
+%USB\VID_12C1&PID_0600.DeviceDesc%=SmiHed5Eye.Boot, USB\VID_12C1&PID_0600
+%USB\VID_12C1&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_12C1&PID_0601
+%USB\VID_28A3&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_28A3&PID_0601
+
+; For XP and later, 64bit AMD
+[SMI.NTamd64]
+%USB\VID_12C1&PID_0600.DeviceDesc%=SmiHed5Eye.Boot, USB\VID_12C1&PID_0600
+%USB\VID_12C1&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_12C1&PID_0601
+%USB\VID_28A3&PID_0601.DeviceDesc%=SMIHed5Eye.Dev, USB\VID_28A3&PID_0601
+
+
+[SMIHed5Eye.Boot]
+CopyFiles=SMIHed5Eye.Files.Boot
+AddReg=SMIHed5Eye.Boot.AddReg
+
+[SMIHed5Eye.Boot.NT]
+CopyFiles=SMIHed5Eye.Files.Boot
+AddReg=SMIHed5Eye.Boot.AddReg
+
+[SMIHed5Eye.Boot.NT.Services]
+AddService = SMIHed5Eye_Boot, 0x00000002, SMIHed5Eye.Boot.AddService
+
+[SMIHed5Eye.Boot.AddService]
+DisplayName    = %SMIHed5Eye.Boot.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\SMIHed5Eye_Boot.sys
+LoadOrderGroup = Base
+
+[SmiHed5Eye.Boot.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,SmiHed5Eye_Boot.sys
+
+[SMIHed5Eye.Files.Boot]
+SMIHed5Eye_Boot.sys
+
+[SMIHed5Eye.Dev]
+CopyFiles=SMIHed5Eye.Files.Ext
+AddReg=SMIHed5Eye.Dev.AddReg
+
+[SMIHed5Eye.Dev.NT]
+CopyFiles=SMIHed5Eye.Files.Ext
+AddReg=SMIHed5Eye.Dev.AddReg
+
+[SMIHed5Eye.Dev.NT.Services]
+AddService = SMIHed5Eye, 0x00000002, SMIHed5Eye.AddService
+
+[SMIHed5Eye.AddService]
+DisplayName    = %SMIHed5Eye.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\SMIHed5Eye.sys
+;AddReg         = SMIHed5Eye.AddReg
+LoadOrderGroup = Base
+
+[SmiHed5Eye.Dev.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,SmiHed5Eye.sys
+
+[SMIHed5Eye.Files.Ext]
+SMIHed5Eye.sys
+
+[SourceDisksNames]
+1=%Disk_Description%,,,
+
+[SourceDisksFiles]
+SMIHed5Eye.sys = 1
+SMIHed5Eye_Boot.sys = 1
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+;-------------- WDF Coinstaller installation
+
+[DestinationDirs]
+CoInstaller_CopyFiles = 11
+
+[SMIHed5Eye.Dev.NT.CoInstallers]
+AddReg=CoInstaller_AddReg
+CopyFiles=CoInstaller_CopyFiles
+
+[CoInstaller_CopyFiles]
+WdfCoInstaller01009.dll
+
+[SourceDisksFiles]
+WdfCoInstaller01009.dll=1 ; make sure the number matches with SourceDisksNames
+
+[CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01009.dll,WdfCoInstaller"
+
+[SMIHed5Eye.Dev.NT.Wdf]
+KmdfService = SMIHed5Eye, SMIHed5Eye_wdfsect
+[SMIHed5Eye_wdfsect]
+KmdfLibraryVersion = 1.9
+
+;---------------------------------------------------------------;
+
+[Strings]
+SMI="SensoMotoric Instruments"
+MfgName="SMI"
+Disk_Description="SMI HED5 Eye Camera Installation Disk"
+USB\VID_12C1&PID_0601.DeviceDesc="SMI HED5 Eye Camera"
+USB\VID_28A3&PID_0601.DeviceDesc="SMI HED5 Eye Camera"
+USB\VID_12C1&PID_0600.DeviceDesc="SMI HED5 Eye Boot Loader"
+SMIHed5Eye.Boot.SvcDesc="SMI HED5 Eye Camera Boot Loader"
+SMIHed5Eye.SvcDesc="SMI HED5 Eye Camera Driver"
+ClassName       = "SMI Eye Tracking devices"
+

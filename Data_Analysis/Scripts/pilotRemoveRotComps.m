@@ -1,0 +1,63 @@
+% for the data in the neil pilot study, remove the EEG independant
+% components related to the head rotation
+clear all; clc; close all;
+
+LOAD_PATH = fullfile('..','Data',['training_v3'],'training_data_neil_pilot.mat');
+load(LOAD_PATH);
+
+DEPENDANCY_PATH = fullfile('..','Dependancies');
+addpath(genpath(DEPENDANCY_PATH));
+FUNC_PATH = fullfile('..','Functions');
+addpath(FUNC_PATH);
+
+% Change labels so that targets=1 and distractors=0
+stimulus_type = convertLabels(stimulus_type);
+
+% look at only the first set of 20 blocks
+if false
+    dwell_times(block>=20) = [];
+    EEG(:,:,block>=20) = [];
+    head_rotation(block>=20,:) = [];
+    pupil(block>=20,:) = [];
+    stimulus_type(block>=20) = [];
+end
+
+% Import Data
+EEGlab = pop_importdata('data', EEG, 'dataformat', 'array','chanlocs','biosemi_64.ced','xmin',-.5,'srate',256);
+
+% PCA
+tmp = reshape3Dto2D(EEG);
+stop=1;
+
+% ICA
+EEG_IC = pop_runica(EEGlab,'icatype','runica');
+
+% Calculate the ICA activations
+% https://sccn.ucsd.edu/pipermail/eeglablist/2013/006954.html
+EEG_IC.icaact = (EEG_IC.icaweights*EEG_IC.icasphere)*EEG_IC.data(EEG_IC.icachansind,:);
+
+
+
+% Find the components that are caused by the head rotation
+[~,rotComps] = rmvRotationComps(EEG_IC.icaact,head_rotation);
+
+% Remove the components that are caused by the head rotation
+EEG_cleaned = pop_subcomp(EEG_IC,rotComps);
+
+% Calculate the ICA activations
+EEG_cleaned.icaact = (EEG_cleaned.icaweights*EEG_cleaned.icasphere)*EEG_cleaned.data(EEG_cleaned.icachansind,:);
+
+% Visualize EEG ERPs
+ylim = [-30,30];
+EEGTarg = pop_importdata('setname','targets','data',EEG_cleaned.data(:,:,stimulus_type==1),'chanlocs','biosemi_64.ced','xmin',-.5,'srate',256);
+EEGDist = pop_importdata('setname','distractors','data',EEG_cleaned.data(:,:,stimulus_type==0),'chanlocs','biosemi_64.ced','xmin',-.5,'srate',256);
+ALLEEG = [EEGTarg, EEGDist];
+pop_comperp(ALLEEG,1,1,2,'ylim',ylim,'title','Targets-Distractors','addavg','on','subavg','on','diffavg','on');
+EEGMeanDiff = mean(EEGTarg.data,3)-mean(EEGDist.data,3);
+EEGMeanDiff = pop_importdata('setname','diff','data',EEGMeanDiff,'chanlocs','biosemi_64.ced','xmin',-.5,'srate',256);
+pop_topoplot(EEGMeanDiff,1,[-200,-100,0,50,100,150,200,300,400,500,600,700,1000],'Targets - Distractors');
+pop_topoplot(EEGTarg,1,[-200,-100,0,50,100,150,200,300,400,500,600,700,1000],'Targets');
+pop_topoplot(EEGDist,1,[-200,-100,0,50,100,150,200,300,400,500,600,700,1000],'Distractors');
+
+
+disp('done')

@@ -1,0 +1,113 @@
+## [MiiSimulation]
+## CorneaR:	7.8
+## CfgDate:	2014.99.99
+## Width:	640
+## Height:	480
+## ROIoffsetX:	56
+## ROIoffsetY:	0
+## PixelPitchX:	0.006
+## PixelPitchY:	0.006
+## EyeCamGain:	1.0
+## EyeCamExposure:	1.0
+## EyeCamFOV:	56.0
+##
+## EyeCamPos:	31.037161	5.395513	54.397370
+## EyeCamOrX:	353.674703
+## EyeCamOrY:	0.294242
+## EyeCamOrZ:	341.208783
+## LensDioptres:	26.500000
+## LensPos:	31.750000	2.700000	7.500000
+##
+## LensNormal:	0	0	1
+## EyeCamDistortionModel:	None
+## EyeCamSensorOffsetX:	0.0
+## EyeCamSensorOffsetY:	0.0
+## EyeCamRadialDistortion:	0.0	0.0	0
+## EyeCamTangentialDistortion:	0.0	0.0
+## FrameLed0Pos:	54.35	2.70	0.42
+## FrameLed1Pos:	44.72	21.22	0.42
+## FrameLed2Pos:	14.43	17.23	0.42
+## FrameLed3Pos:	9.23	0.73	0.42
+## FrameLed4Pos:	17.22	-14.62	0.42
+## FrameLed5Pos:	46.28	-14.62	0.42
+## AssumedPORDepth:	1500
+## EyeBallPos:	31.6	2.7	-24.3
+## SceneCamWidth:	1920
+## SceneCamHeight:	1080
+## SceneCamGain:	0.9
+## SceneCamExposure:	2900
+## SceneCamFOV:	77
+## SceneCamMonocFOV:	75
+## LensToLensDistance:	63.5
+## HMDScreenDimension:	125.77
+## SceneCamPos:	0	0	-41.0
+## SceneCamOrX:	0
+## SceneCamDistortionModel:	None
+## SceneCamSensorOffsetX:	0
+## SceneCamSensorOffsetY:	0
+## SceneCamRadialDistortion:	0	0	0
+## SceneCamTangentialDistortion:	0	0
+## SceneCamPixelPitchX:	0.00375
+## SceneCamPixelPitchY:	0.00375
+## SceneCamOrY:	0
+## SceneCamOrZ:	0
+## DeviceSerialNumber:	DK2-5
+## CalibrationDate:	2014.11.14
+## MinCorneaDistance:	1.0
+## MaxCorneaDistance:	30.0
+## CorneaCenterMatchingDistance:	5.0
+##
+## FilterGaze:	0.5
+## FilterGazeOff:	0.8
+## NumberOfValidationPoints:	4	4	4.5
+## 
+## Calibration1Point:	1	960.0	540.0
+##
+## Calibration2Point:	1	720	472.5
+## Calibration2Point:	2	1200	675
+## 
+## Calibration3Point:	1	780.8	453.6
+## Calibration3Point:	2	960.0	626.4
+## Calibration3Point:	3	1139.2	453.6
+## 
+## Calibration5Point:	1	780.8	453.6
+## Calibration5Point:	2	1139.2	626.4
+## Calibration5Point:	3	1139.2	453.6
+## Calibration5Point:	4	780.8	626.4
+## Calibration5Point:	5	960.0	540.0
+## 
+## Calibration9Point:	1	750.8	423.6
+## Calibration9Point:	2	1169.2	656.4
+## Calibration9Point:	3	1169.2	423.6
+## Calibration9Point:	4	750.8	656.4
+## Calibration9Point:	5	960.0	540.0
+## Calibration9Point:	6	1169.2	540.0
+## Calibration9Point:	7	960.0	423.6
+## Calibration9Point:	8	750.8	540.0
+## Calibration9Point:	9	960.0	656.4
+## 
+## AutoFixationSize:	30
+## AutoFixationS2SThreshold:	5
+## AutoFixationS2MThreshold:	10
+## AutoFixation2CalPointThreshold:	90
+##
+## [EyeCameraCalibration]
+## Checkerboard:	15	12
+## Target1:	21.9195	9.6850	-11.0000
+## Target2:	40.0805	9.6850	-11.0000
+## Target3:	40.0805	-4.2850	-11.0000
+## Target4:	21.9195	-4.2850	-11.0000
+##
+## [SceneCameraCalibration]
+## Checkerboard:	15	12
+## Target1:	295.7500	100.3273	830.0578
+## Target2:	-295.7500	100.3273	830.0578
+## Target3:	-295.7500	-347.7519	751.0005
+## Target4:	295.7500	-347.7519	751.0005
+##
+## [LEDCalibration]
+## SphereCenter1:	24.50	10.20	-25.50
+## SphereCenter2:	40.00	10.20	-19.50
+## SphereCenter3:	32.00	-2.30	-22.00
+## SphereRadius:	7.9375
+

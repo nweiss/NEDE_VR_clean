@@ -1,0 +1,22 @@
+function script_runEverything
+
+% This script uses getSubjects to get the file prefixes we want to use,
+% then calls run_logisticregression_jittered_EM_saccades_wrapper for each
+% one.  Results will be saved to appropriate folders.
+%
+% script_runEverything
+%
+% Navigate to the 'code' folder of the JitteredLogisticRegression dropbox
+% folder
+%
+% Created 6/24/11 by BC.
+% Updated 8/3/11 by DJ - comments.
+
+subjects = getSubjects;
+
+for j=1:length(subjects)
+    run_logisticregression_jittered_EM_saccades_wrapper(subjects{j},'start',1);
+    run_logisticregression_jittered_EM_saccades_wrapper(subjects{j},'start',0);
+    run_logisticregression_jittered_EM_saccades_wrapper(subjects{j},'end',1);
+    run_logisticregression_jittered_EM_saccades_wrapper(subjects{j},'end',0);
+end

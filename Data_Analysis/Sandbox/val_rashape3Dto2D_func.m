@@ -1,0 +1,14 @@
+clear all; close all; clc; 
+
+FUNC_PATH = fullfile('..','Functions');
+addpath(FUNC_PATH)
+
+data = zeros(3,4,5);
+for i = 1:5
+    data(:,:,i) = i*ones(3,4);
+end
+
+data2D = reshape3Dto2D(data);
+
+nSamples = size(data,2);
+data3D = reshape2Dto3D(data2D,nSamples);

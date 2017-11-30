@@ -1,0 +1,96 @@
+## [MiiSimulation]
+## Version:	1.1
+## CorneaR:	7.8
+## CfgDate:	2014.99.99
+## Width:	640
+## Height:	480
+## ROIoffsetX:	56
+## ROIoffsetY:	0
+## PixelPitchX:	0.006
+## PixelPitchY:	0.006
+## EyeCamGain:	1.0
+## EyeCamExposure:	1.0
+## EyeCamFOV:	56.0
+## 
+## EyeCamPos:	-31.553498655416369444992596982047	0.87644569321111576165606038557598	54.907208300682192714248230913654
+## EyeCamOrX:	176.19463940049607231230766046792
+## EyeCamOrY:	-1.5578981657394646020975415012799
+## EyeCamOrZ:	160.92768645115944536883034743369
+## LensDioptres:	26.5
+## LensPos:	-31.75	2.700000000000000177635683940025	7.5
+## 
+## LensNormal:	0	0	1
+## EyeCamDistortionModel:	None
+## EyeCamSensorOffsetX:	0.0
+## EyeCamSensorOffsetY:	0.0
+## EyeCamRadialDistortion:	0.0	0.0	0
+## EyeCamTangentialDistortion:	0.0	0.0
+## 
+## FrameLed3Pos:	-8.92	0.70	0.338784
+## FrameLed2Pos:	-14.19	17.43	0.338784
+## FrameLed1Pos:	-44.90	21.47	0.338784
+## FrameLed0Pos:	-54.67	2.70	0.338784
+## FrameLed5Pos:	-46.48	-14.86	0.338784
+## FrameLed4Pos:	-17.02	-14.86	0.338784
+## 
+## AssumedPORDepth:	1500
+## EyeBallPos:	-31.6	2.7	-24.3
+## SceneCamWidth:	1920
+## SceneCamHeight:	1080
+## SceneCamGain:	0.9
+## SceneCamExposure:	2900
+## SceneCamFOV:	87
+## SceneCamMonocFOV:	84
+## LensToLensDistance:	63.5
+## HMDScreenDimension:	125.77
+## SceneCamPos:	0	0	-35.0
+## SceneCamOrX:	0
+## SceneCamDistortionModel:	None
+## SceneCamSensorOffsetX:	0
+## SceneCamSensorOffsetY:	0
+## SceneCamRadialDistortion:	0	0	0
+## SceneCamTangentialDistortion:	0	0
+## SceneCamPixelPitchX:	0.00375
+## SceneCamPixelPitchY:	0.00375
+## SceneCamOrY:	0
+## SceneCamOrZ:	0
+## DeviceSerialNumber:	DK2-207Z2C07CQAN
+## CalibrationDate:	2015.05.08
+## MinCorneaDistance:	1.0
+## MaxCorneaDistance:	30.0
+## CorneaCenterMatchingDistance:	5.0
+## 
+## PupilDetectorCircleCenterX:	333
+## PupilDetectorCircleCenterY:	261
+## PupilDetectorCircleRadius:	227
+## 
+## PupilDetectorSmoothingKernelSize:	5
+## PupilDetectorThresholdMinWeight:	0.8
+## 
+## Calibration3Point:	1	780.8	453.6
+## Calibration3Point:	2	1139.2	453.6
+## Calibration3Point:	3	960.0	626.4
+## 
+## Calibration2Point:	1	720	472.5
+## Calibration2Point:	2	1200	675
+## 
+## [EyeCameraCalibration]
+## Checkerboard:	15	12
+## DepthRange:	-9	-18.5
+## DepthStepSize:	0.5
+## Target1:	-40.0805	9.6850
+## Target2:	-21.9195	9.6850
+## Target3:	-21.9195	-4.2850
+## Target4:	-40.0805	-4.2850
+## 
+## [EyeCameraValidation]
+## Checkerboard:	15	12
+## Target1:	-39.8	9.56160099	-12.5359977
+## Target2:	-21.9	9.56160099	-12.5359977
+## Target3:	-21.9	0.20719017	-22.92515606
+## Target4:	-39.8	0.20719017	-22.92515606
+## Base1:	-47.3	-3.20537	-26.7152
+## Base2:	-14.7	-3.20537	-26.7152
+## Base3:	-14.7	13.1749	-8.52301
+## Base4:	-47.3	13.1749	-8.52301
+

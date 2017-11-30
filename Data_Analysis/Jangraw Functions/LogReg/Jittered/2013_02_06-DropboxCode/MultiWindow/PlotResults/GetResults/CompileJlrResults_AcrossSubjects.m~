@@ -1,0 +1,17 @@
+function [Az, t, vout, fwdmodels] = CompileJlrResults_AcrossSubjects(subjects,taglist)
+
+% Created 12/6/12 by DJ.
+
+% Set up
+nSubjects = numel(subjects);
+nAnalyses = numel(taglist);
+
+% Declare variables
+[Az,t,vout,fwdmodels] = deal(cell(1,nAnalyses));
+% Load and compile data
+for i=1:nAnalyses    
+    % Load results
+    [JLR,JLP] = LoadJlrResults_AcrossSubjects(subjects,taglist{i});    
+    % Save out results of interest
+    [Az{i},t{i},vout{i},fwdmodels{i}] = AverageJlrResults_AcrossSubjects(JLR,JLP);
+end

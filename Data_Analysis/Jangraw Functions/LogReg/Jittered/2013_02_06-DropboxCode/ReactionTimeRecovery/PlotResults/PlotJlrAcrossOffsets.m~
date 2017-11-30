@@ -1,0 +1,60 @@
+function PlotJlrAcrossOffsets(JLR,JLP)
+
+
+JLRavg = AverageJlrResults(JLR,JLP);
+[jitter,truth, RT] = GetJitter(JLP.ALLEEG,'facecar');
+if ~isempty(strfind(JLP.ALLEEG(1).setname,'_F_'));
+    faces = find(JLRavg.truth==0);
+    cars = find(JLRavg.truth==1);
+else
+    cars = find(JLRavg.truth==0);
+    faces = find(JLRavg.truth==1);
+end
+
+% Plot JLR Posteriors at multiple window offsets
+clf;
+iWin = 1:3:numel(JLR.Azloo); % windows to highlight
+nWin = numel(iWin);
+tAz = JLP.ALLEEG(1).times(round(JLR.trainingwindowoffset+JLP.scope_settings.trainingwindowlength/2));
+% avgFwdModel = mean(cat(3,JLR.fwdmodels{:}),3);
+
+subplot(4,1,1); cla; hold on;
+plot(tAz,JLR.Azloo,'b.-');
+plot(tAz(iWin),JLR.Azloo(iWin),'bo');
+set(gca,'ylim',[0.3 1]);
+plot([-mean(RT) -mean(RT)],get(gca,'ylim'),'r--')
+plot(get(gca,'xlim'),[0.5 0.5],'k--');
+plot(get(gca,'xlim'),[0.75 0.75],'k:');
+xlabel('time in epoch (ms)');
+ylabel('10-fold Az');
+legend('Az','highlighted times','Mean RT')
+title(show_symbols(sprintf('%s vs. %s, jittered LR',ALLEEG(1).setname, ALLEEG(2).setname)))
+
+for i=1:nWin
+    subplot(4,nWin,nWin+i)
+    topoplot(JLRavg.fwdmodels(:,iWin(i)),EEG.chanlocs);
+%     set(gca,'CLim',[-2 2]);
+    colorbar
+    title(sprintf('Fwd Model\nOffset = %0.1f ms', tAz(iWin(i))));
+end
+for i=1:nWin
+    subplot(2,nWin,nWin+i)
+    JLRavg.post(faces,:) = JLR.posterior2(faces,:,iWin(i));
+    JLRavg.post(cars,:) = JLR.posterior(cars,:,iWin(i));
+    post = post./repmat(sum(post,2),1,size(post,2)); % Normalize each row to sum to 1
+    ImageSortedData(JLRavg.post(faces,:),postTimes,faces,jitter(faces));
+    ImageSortedData(JLRavg.post(cars,:),postTimes,cars,jitter(cars));
+    set(gca,'clim',[0 0.01])
+    if length(postTimes)>1
+        xlim([postTimes(1) postTimes(end)])
+    end
+    title(sprintf('Posteriors: p(t_i|y_i,c_i)\nOffset = %.1fms',tAz(iWin(i))));   
+    xlabel('time from window center (ms)')    
+end
+
+subplot(2,nWin,nWin+1)
+if ~isempty(strfind(JLP.ALLEEG(1).setname,'_F_'));
+    ylabel('<-- faces     |     cars -->')
+else
+    ylabel('<-- cars     |     faces -->')
+end

@@ -1,0 +1,42 @@
+function [ALLEEG, v, Azloo, time] = run_logisticregression_jittered_EM_saccades_wrapper(subject,saccadeType,weightprior)
+
+if ~exist('saccadeType') || ~length(saccadeType)
+    saccadeType = 'start';
+end
+if ~exist('weightprior') || ~length(weightprior)
+    weightprior = 1;
+end
+
+[ALLEEG,EEG,setlist,saccadeTimes] = loadSubjectData(subject);
+chansubset = 1:ALLEEG(setlist(1)).nbchan;
+chansubset2 = chansubset;
+
+outDirName = ['./results_',subject,'_',saccadeType,'Saccades'];
+if weightprior == 1
+    outDirName = [outDirName,'_weightprior/'];
+else
+    outDirName = [outDirName,'_noweightprior/'];
+end
+if isdir(outDirName)
+    disp('Completed already!');
+    return;
+end
+
+trainingwindowlength = 13;
+trainingwindowinterval = 3;
+jitterrange = [0 250];
+if strcmp(saccadeType,'start')
+    saccadeTimes1 = saccadeTimes.distractor_saccades_start; % or use end times
+    saccadeTimes2 = saccadeTimes.target_saccades_start;
+else
+    saccadeTimes1 = saccadeTimes.distractor_saccades_end;
+    saccadeTimes2 = saccadeTimes.target_saccades_end;
+end
+
+convergencethreshold = 1e-5;
+LOO = 1;
+bootstrap = 0;
+
+
+run_logisticregression_jittered_EM_saccades(outDirName,ALLEEG,setlist,chansubset,chansubset2,trainingwindowlength,trainingwindowinterval,jitterrange,saccadeTimes1,saccadeTimes2,convergencethreshold,LOO,bootstrap,weightprior);
+

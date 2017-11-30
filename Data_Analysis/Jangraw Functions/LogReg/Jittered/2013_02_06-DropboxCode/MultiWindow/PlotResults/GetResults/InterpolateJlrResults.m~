@@ -1,0 +1,44 @@
+function [AzMean,fwdmodelsMean,KA] = InterpolateJlrResults(Az,t,tMean,fwdmodels)
+
+% Az and t should be nSubjects x nTimepoints x nAnalyses
+% fwdmodels should be nChans x nTimepoints x nSubjects x nAnalyses
+%
+% Created 12/6/12 by DJ.
+
+if nargin<3 || isempty(tMean)
+    tMean = linspace(min(t(:)),max(t(:)),1000)';
+end
+if nargin<4 || isempty(fwdmodels)
+    doFwdmodels = false;
+else
+    doFwdmodels = true;
+end
+
+nPoints = length(tMean);
+nAnalyses = size(Az,3);
+nSubjects = size(Az,1);
+AzInterp = nan(nPoints,nSubjects,nAnalyses);
+AzMean = nan(nPoints,nAnalyses);
+for i=1:nAnalyses    
+    for j=1:nSubjects
+        AzInterp(:,j,i) = interp1(t(j,:,i),Az(j,:,i),tMean,'linear','extrap')';
+    end     
+    AzMean(:,i) = mean(AzInterp(:,:,i),2);
+end
+
+
+if doFwdmodels    
+    nChans = size(fwdmodels,1);
+    fwdmodelsMean = nan(nChans,nPoints,nAnalyses);
+    for i=1:nAnalyses        
+        fmInterp = nan(nChans,nPoints,nSubjects);
+        for j=1:nSubjects
+            fmInterp(:,:,j) = interp1(t(j,:,i),fwdmodels(:,:,j,i)',tMean,'linear','extrap')';
+        end
+        fwdmodelsMean(:,:,i) = mean(fmInterp,3);
+    end
+else
+    fwdmodelsMean = [];
+end
+        
+        

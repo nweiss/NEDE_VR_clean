@@ -1,0 +1,186 @@
+% TEMP_GetCorrelationsBetweenFeatures.m
+%
+% Created 7/28/14 by DJ.
+
+subjects = [22:30 32];
+sessions_cell = {2:14, [3 6:17], 1:15, 1:15, 1:15, 1:15, 1:15, 1:15, [1:10 12:15], 2:16};
+offsets = [-12 -4 48 60 68 68 92 112 -32 88];
+
+[dwell_time, sac_size, sac_speed, fixtime_max, fixtime_mean, nsac, fixtime_first, rxn_time, fixtime_b4, fixtime_after, sacsize_away, dist2obj_b4, dist2obj_first, dist2obj_last, dist2obj_after, fixtime_last] = GetVariousEyeFeatures(subjects,sessions_cell);
+% bigEyeFeature = AppendFeatures(dwell_time, sac_size, sac_speed, fixtime_max, fixtime_mean, nsac, fixtime_first);
+% bigEyeFeature = AppendFeatures(dwell_time, sac_size, fixtime_mean, nsac, fixtime_first, rxn_time, fixtime_b4, fixtime_after, sacsize_away, dist2obj_b4, dist2obj_first, dist2obj_last, dist2obj_after, fixtime_last);
+bigEyeFeature = AppendFeatures(nsac,dist2obj_b4,sac_size,dist2obj_first, dist2obj_last,sacsize_away,  dist2obj_after,  rxn_time,dwell_time, fixtime_b4,fixtime_first,fixtime_mean, fixtime_last,  fixtime_after);
+
+%% Get pupil and EEG features
+% Use TEMP_ClassifyWithPupilSize_v2 to get ps_all, t_epoch,
+% binstart,binwidth, R (with y_EEG)
+[ps_bin, ps_max, ps_latency, ps_deriv] = GetVariousPupilFeatures(ps_all,t_epoch,binstart,binwidth);
+% bigPupFeature = AppendFeatures(ps_bin, ps_max, ps_latency, ps_deriv);
+bigPupFeature = AppendFeatures(ps_latency,ps_max,ps_bin,ps_deriv);
+
+
+
+%% Combine features
+bigFeature = AppendFeatures(bigEyeFeature,bigPupFeature);
+truth = cell(1,numel(subjects));
+for iSubj = 1:numel(bigFeature)   
+    bigFeature{iSubj} = cat(2,R(iSubj).y_EEG,bigFeature{iSubj});
+    truth{iSubj} = R(iSubj).truth;
+end
+nFeats = size(bigFeature{1},2);
+
+% featurenames = {'EEG(150)', 'EEG(250)', 'EEG(350)', 'EEG(450)', 'EEG(550)', 'EEG(650)', 'EEG(750)', 'EEG(850)', 'EEG(950)', ...
+%     'dwellTime','sizeSac_to','durFix_mean','nFix', 'durFix_first','reactionTime', 'durFix_before', 'durFix_after', 'sizeSac_away','dist_before', 'dist_first', 'dist_last', 'dist_after','durFix_last'...
+%     'PD(250)','PD(750)','PD(1250)','PD(1750)','PD(2250)','PD(2750)','PDmax','latency_PDmax','PD''(250)','PD''(750)','PD''(1250)','PD''(1750)','PD''(2250)','PD''(2750)'};
+
+featurenames = {'EEG(150)', 'EEG(250)', 'EEG(350)', 'EEG(450)', 'EEG(550)', 'EEG(650)', 'EEG(750)', 'EEG(850)', 'EEG(950)', ...
+    'nFix', 'dist_before','sizeSac_to','dist_first', 'dist_last','sizeSac_away','dist_after', 'reactionTime','dwellTime','durFix_before','durFix_first','durFix_mean','durFix_last','durFix_after',...
+    'latency_PDmax','PDmax','PD(250)','PD(750)','PD(1250)','PD(1750)','PD(2250)','PD(2750)','PD''(250)','PD''(750)','PD''(1250)','PD''(1750)','PD''(2250)','PD''(2750)'};
+
+%% Save results
+save BigFeature bigFeature featurenames truth
+
+%%
+types = {'EEG','Numeric','Distance','Time','PD','dPD/dt'};
+nTypeFeats = [9 1 6 8 7 6];
+colors = [0 0 1; 0 1 1; 0 .5 0; 1 0 0; .5 0 1; 1 .5 0];
+
+foo = load('TEMP_HybridClassifier_Results','Az_eeg');
+[Az,order] = sort(foo.Az_eeg,'descend');
+
+nSubj = length(bigFeature);
+nFeats = numel(featurenames);
+[rho_0,p_0,rho_1,p_1] = deal(nan(nFeats,nFeats,nSubj));
+
+figure(9); clf;
+for iSubj = 1:nSubj
+    iSubj_ordered = order(iSubj);
+%     feats = [R_dt(iSubj).y; R_ps(iSubj).y; R_eeg(iSubj).y];
+%     truth = R_dt(iSubj).truth;
+%     [rho_0(:,:,iSubj), p_0(:,:,iSubj)] = corr(feats(:,truth<1)');
+%     [rho_1(:,:,iSubj), p_1(:,:,iSubj)] = corr(feats(:,truth>0)');
+           
+    [rho_0(:,:,iSubj), p_0(:,:,iSubj)] = corr(bigFeature{iSubj_ordered}(truth{iSubj_ordered}<1,:));
+    [rho_1(:,:,iSubj), p_1(:,:,iSubj)] = corr(bigFeature{iSubj_ordered}(truth{iSubj_ordered}>0,:));
+        
+end
+
+
+% FDR correct all results
+p0_temp = p_0; p0_temp(p_0>0.5) = 1-p0_temp(p_0>0.5);
+p1_temp = p_0; p1_temp(p_1>0.5) = 1-p1_temp(p_1>0.5);
+p0_thresh = fdr(p0_temp,0.05);
+p1_thresh = fdr(p1_temp,0.05);        
+rho_0_thresh = rho_0;
+%     rho_0_thresh(p_0>0.05 & p_0<0.95) = 0;
+rho_0_thresh(p0_temp>p0_thresh) = 0;
+rho_1_thresh = rho_1;
+%     rho_1_thresh(p_1>0.05 & p_1<0.95)= 0;
+rho_1_thresh(p1_temp>0.05 & p1_thresh<0.95)= 0;
+
+for iSubj = 1:nSubj
+    subplot(4,nSubj/2,iSubj);
+    imagesc(rho_0_thresh(:,:,iSubj));
+    colorbar;
+    hold on;
+%     [iStar,jStar] = find(p_0(:,:,iSubj)<0.05);
+%     plot(iStar,jStar,'m*');  
+    for i=1:numel(types)
+        rectangle('position',[sum(nTypeFeats(1:i-1))+.5, sum(nTypeFeats(1:i-1))+.5, nTypeFeats(i), nTypeFeats(i)], 'edgecolor',colors(i,:),'linewidth',2);
+    end
+    title(sprintf('Pearson Correlation Coeff for \nSubject %d, distractors',iSubj))
+    set(gca,'clim',[-1 1],'xtick',1:nFeats,'xticklabel',featurenames,'ytick',1:nFeats,'yticklabel',featurenames);
+    rotateticklabel(gca,90);    
+
+    subplot(4,nSubj/2,nSubj+iSubj);
+    imagesc(rho_1_thresh(:,:,iSubj));
+    colorbar;    
+    hold on;
+%     [iStar,jStar] = find(p_1(:,:,iSubj)<0.05);
+%     plot(iStar,jStar,'m*');
+    for i=1:numel(types)
+        rectangle('position',[sum(nTypeFeats(1:i-1))+.5, sum(nTypeFeats(1:i-1))+.5, nTypeFeats(i), nTypeFeats(i)], 'edgecolor',colors(i,:),'linewidth',2);
+    end
+    title(sprintf('Pearson Correlation Coeff for \nSubject %d, targets',iSubj))
+    set(gca,'clim',[-1 1],'xtick',1:nFeats,'xticklabel',featurenames,'ytick',1:nFeats,'yticklabel',featurenames);
+    rotateticklabel(gca,90);       
+
+end
+
+linkaxes(GetSubplots(gcf))
+MakeLegend(colors,types,2);
+
+%% 
+figure(10); clf;
+
+% Plot mean rho for distractors
+subplot(2,2,1);
+imagesc(mean(rho_0,3));
+colorbar;
+title(sprintf('Pearson Correlation Coeff for \n%d subjects, distractors',nSubj))
+hold on;
+for i=1:numel(types)
+    rectangle('position',[sum(nTypeFeats(1:i-1))+.5, sum(nTypeFeats(1:i-1))+.5, nTypeFeats(i), nTypeFeats(i)], 'edgecolor',colors(i,:),'linewidth',2);
+end
+% Test for significant difference from 0
+p0_all = nan(size(rho_0,1),size(rho_0,2));
+for i=1:size(rho_0,1)
+    for j=1:size(rho_0,2)
+        [p0_all(i,j)] = signrank(squeeze(rho_0(i,j,:)));
+    end
+end
+p0_thresh = fdr(p0_all,0.05); % fdr correct
+% plot significance
+[iStar,jStar] = find(p0_all<p0_thresh);
+hold on
+plot(iStar,jStar,'m*');
+
+% Plot mean rho for targets
+subplot(2,2,3);
+imagesc(mean(rho_1,3));
+colorbar;    
+title(sprintf('Pearson Correlation Coeff for \n%d subjects, targets',nSubj))
+for i=1:numel(types)
+    rectangle('position',[sum(nTypeFeats(1:i-1))+.5, sum(nTypeFeats(1:i-1))+.5, nTypeFeats(i), nTypeFeats(i)], 'edgecolor',colors(i,:),'linewidth',2);
+end
+% Test for significant difference from 0
+p1_all = nan(size(rho_0,1),size(rho_0,2));
+for i=1:size(rho_0,1)
+    for j=1:size(rho_0,2)
+        [p1_all(i,j)] = signrank(squeeze(rho_1(i,j,:)));
+    end
+end
+p1_thresh = fdr(p1_all,0.05); % fdr correct
+% plot significance
+[iStar,jStar] = find(p1_all<p1_thresh);
+hold on
+plot(iStar,jStar,'m*');
+
+% Plot mean difference in rho for targets vs. distractors
+subplot(2,2,2);
+imagesc(mean(rho_1,3)-mean(rho_0,3));
+colorbar;    
+title(sprintf('Pearson Correlation Coeff for \n%d subjects, targ-dist',nSubj))
+for i=1:numel(types)
+    rectangle('position',[sum(nTypeFeats(1:i-1))+.5, sum(nTypeFeats(1:i-1))+.5, nTypeFeats(i), nTypeFeats(i)], 'edgecolor',colors(i,:),'linewidth',2);
+end
+% Test for significant difference
+p_diff = nan(size(rho_0,1),size(rho_0,2));
+for i=1:size(rho_0,1)
+    for j=1:size(rho_0,2)
+        [p_diff(i,j)] = signrank(squeeze(rho_0(i,j,:)),squeeze(rho_1(i,j,:)));
+    end
+end
+pdiff_thresh = fdr(p_diff,0.05); % fdr correct
+% plot significance
+[iStar,jStar] = find(p_diff<pdiff_thresh);
+hold on
+plot(iStar,jStar,'m*');
+
+% Annotate plots
+set(GetSubplots(gcf),'clim',[-1 1],'xtick',1:nFeats,'xticklabel',featurenames,'ytick',1:nFeats,'yticklabel',featurenames);
+set(subplot(2,2,2),'clim',[-.2 .2])
+rotateticklabel(subplot(2,2,1),90);    
+rotateticklabel(subplot(2,2,2),90);
+rotateticklabel(subplot(2,2,3),90);
+MakeLegend(colors,types,2);

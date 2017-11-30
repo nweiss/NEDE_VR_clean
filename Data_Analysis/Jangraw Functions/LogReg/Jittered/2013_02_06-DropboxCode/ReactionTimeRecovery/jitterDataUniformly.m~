@@ -1,0 +1,23 @@
+function [EEG,jitter] = jitterDataUniformly(EEG,jitterrange)
+
+% Created 8/15/12 by DJ.
+
+% Find uniform jitter
+jitter = linspace(jitterrange(1),jitterrange(2),EEG.trials);
+
+% Add events at these latencies
+events = [repmat(999,1,EEG.trials); jitter]';
+assignin('base','events',events);
+% EEG = pop_importepoch(EEG,'events',{'A','B'},'typefield','A','latencyfields',{'B'},'clearevents','off');
+for i=1:EEG.trials
+    iZeroEvent = EEG.epoch(i).event([EEG.epoch(i).eventlatency{:}]==0);
+    EEG.event(end+1) = EEG.event(iZeroEvent);
+    EEG.event(end).latency = EEG.event(iZeroEvent).latency + jitter(i)/1000*EEG.srate;
+    EEG.event(end).type = 999;
+end
+
+EEG = eeg_checkset(EEG,'eventconsistency');
+EEG = pop_editeventvals( EEG, 'sort', { 'latency', [0], 'epoch', [0]} );
+
+
+% Epoch around these events

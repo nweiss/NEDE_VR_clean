@@ -1,0 +1,78 @@
+## [MiiSimulation]
+## CorneaR:	7.8
+## CfgDate:	2014.99.99
+## Width:	640
+## Height:	480
+## ROIoffsetX:	56
+## ROIoffsetY:	0
+## PixelPitchX:	0.006
+## PixelPitchY:	0.006
+## EyeCamGain:	1.0
+## EyeCamExposure:	1.0
+## EyeCamFOV:	56.0
+##
+## EyeCamPos:	-30.456385	5.723291	56.892651
+## EyeCamOrX:	355.420997
+## EyeCamOrY:	-1.124280
+## EyeCamOrZ:	18.876154
+## LensDioptres:	26.500000
+## LensPos:	-31.750000	2.700000	7.500000
+##
+## LensNormal:	0	0	1
+## EyeCamDistortionModel:	None
+## EyeCamSensorOffsetX:	0.0
+## EyeCamSensorOffsetY:	0.0
+## EyeCamRadialDistortion:	0.0	0.0	0
+## EyeCamTangentialDistortion:	0.0	0.0
+## FrameLed0Pos:	-9.23	0.73	0.42
+## FrameLed1Pos:	-14.43	17.23	0.42
+## FrameLed2Pos:	-44.72	21.22	0.42
+## FrameLed3Pos:	-54.35	2.70	0.42
+## FrameLed4Pos:	-46.28	-14.62	0.42
+## FrameLed5Pos:	-17.22	-14.62	0.42
+## AssumedPORDepth:	1500
+## EyeBallPos:	-31.6	2.7	-24.3
+## SceneCamWidth:	1920
+## SceneCamHeight:	1080
+## SceneCamGain:	0.9
+## SceneCamExposure:	2900
+## SceneCamFOV:	77
+## SceneCamMonocFOV:	75
+## LensToLensDistance:	63.5
+## SceneCamPos:	0	0	-41.0
+## SceneCamOrX:	0
+## SceneCamDistortionModel:	None
+## SceneCamSensorOffsetX:	0
+## SceneCamSensorOffsetY:	0
+## SceneCamRadialDistortion:	0	0	0
+## SceneCamTangentialDistortion:	0	0
+## SceneCamPixelPitchX:	0.00375
+## SceneCamPixelPitchY:	0.00375
+## SceneCamOrY:	0
+## SceneCamOrZ:	0
+## DeviceSerialNumber:	DK2-5
+## CalibrationDate:	2014.11.14
+## MinCorneaDistance:	1.0
+## MaxCorneaDistance:	30.0
+## CorneaCenterMatchingDistance:	5.0
+##
+## [EyeCameraCalibration]
+## Checkerboard:	15	12
+## Target1:	-40.0805	9.6850	-11.0000
+## Target2:	-21.9195	9.6850	-11.0000
+## Target3:	-21.9195	-4.2850	-11.0000
+## Target4:	-40.0805	-4.2850	-11.0000
+##
+## [SceneCameraCalibration]
+## Checkerboard:	15	12
+## Target1:	295.7500	100.3273	830.0578
+## Target2:	-295.7500	100.3273	830.0578
+## Target3:	-295.7500	-347.7519	751.0005
+## Target4:	295.7500	-347.7519	751.0005
+## 
+## [LEDCalibration]
+## SphereCenter1:	-24.50	10.20	-25.50
+## SphereCenter2:	-40.00	10.20	-19.50
+## SphereCenter3:	-32.00	-2.30	-22.00
+## SphereRadius:	7.9375
+

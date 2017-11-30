@@ -1,0 +1,15 @@
+In this task, you will observe a moving view of a 3-dimensional environment. 
+
+You will only be observing, not moving with the joystick.
+
+<ENDPAGE>
+On this session, count the number of <targetString> objects you see and ignore all other objects.
+
+Do not press any buttons or say anything out loud - instead, try to stay perfectly still and just count internally.
+
+<ENDPAGE>
+The session will end automatically.  
+
+When you are ready to begin, click the button below.
+
+<ENDPAGE>

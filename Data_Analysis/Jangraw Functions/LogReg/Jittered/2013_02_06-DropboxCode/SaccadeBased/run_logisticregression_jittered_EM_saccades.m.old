@@ -1,0 +1,240 @@
+function [ALLEEG, v, Azloo, time] = run_logisticregression_jittered_EM_saccades(outDirName,ALLEEG,setlist, chansubset, chansubset2, trainingwindowlength, trainingwindowinterval, jitterrange, saccadeTimes1, saccadeTimes2, convergencethreshold, LOO, bootstrap, weightprior)
+
+% Perform logistic regression with trial jitter on a dataset.
+%
+% [ALLEEG, v, Azloo] = run_logisticregression_jittered_EM_saccades(ALLEEG,setlist,
+% chansubset, chansubset2, trainingwindowlength, trainingwindowinterval, 
+% jitterrange, convergencethreshold, LOO, bootstrap)
+%
+% INPUTS:
+% -ALLEEG is an array of eeglab data structs.
+% -setlist is a 2-element vector of the ALLEEG indices you wish to 
+% discriminate. 
+% -chansubset and chansubset2 are d-element arrays of the channel numbers 
+% you wish to use for discrimination in datasets 1 and 2.  They must be the
+% same length.
+% -windowlength is the number of samples that were in your training window.
+% -windowinterval is number of samples by which you want to slide your 
+% training window each time.  
+% -jittermax is the max allowable jitter, in samples.
+% -convergencethreshold is the max change in Az that will be considered
+% grounds for stopping iterations of the logistic regression algorithm.
+%
+% OUTPUTS:
+% -ALLEEG is the input array, but with info about the analysis stored in
+% the ica-related fields of the datasets in setlist.  Specifically, 
+% EEG.icawinv contains the forward model across all datasets.  
+% EEG.icaweights contains the weight vector v (with no bias term).
+% -v is the weight vector from the training data (the first d are spatial
+% weights, and the last element is the bias.)  Negative values of
+% y=x*v(1:end-1) + v(end) indicate that the sample is part of setlist(1)'s
+% class.  Positive values indicate setlist(2)'s class.
+% -Azloo and time are vectors of the leave-one-out Az values and the center
+% of the time bin (in ms from setlist(1)'s time zero) at which they were 
+% calculated.
+%
+% Created 5/12/11 by BC.
+
+%% Set up
+if ~exist('outDirName') || ~length(outDirName); outDirName = './results/'; end;
+if ~exist('setlist'); setlist = [1,2]; end;
+if ~exist('chansubset'); chansubset = []; end;
+if ~exist('chansubset2'); chansubset2 = []; end;
+if ~exist('trainingwindowlength'); trainingwindowlength = []; end;
+if ~exist('trainingwindowinterval'); trainingwindowinterval = []; end;
+if ~exist('jitterrange'); jitterrange = []; end;
+if ~exist('convergencethreshold'); convergencethreshold = []; end;
+if ~exist('LOO'); LOO = 1; end;
+if ~exist('bootstrap'); bootstrap = 0; end;
+if ~exist('weightprior'); weightprior = 1; end;
+
+if jitterrange(1) > jitterrange(2)
+    error('jitterrange must be 2-element vector sorted in ascending order!');
+end
+
+EEG = ALLEEG(setlist(1));
+
+trainingwindowoffset = 1-jitterrange(1) : trainingwindowinterval : EEG.pnts-trainingwindowlength-jitterrange(2);
+% trainingwindowoffset = 190;%264;%190;%264;%[190];%,264];
+
+iMidTimes = trainingwindowoffset + floor(trainingwindowlength/2); % middle of time window
+time = EEG.times(iMidTimes)*0.001; % crop and convert to seconds
+
+% Ensure the saccadeTime cell arrays are row vectors
+if size(saccadeTimes1,1) ~= 1; saccadeTimes1 = saccadeTimes1'; end;
+if size(saccadeTimes2,1) ~= 1; saccadeTimes2 = saccadeTimes2'; end;
+saccadeTimes = [saccadeTimes1,saccadeTimes2];
+
+% Set parameters
+regularize = 1;
+lambda = 1e-6;
+lambdasearch = false;
+eigvalratio = 1e-4;
+vinit = zeros(length(chansubset)+1,1);
+show = 0;
+parallel = 1;
+
+jitterPrior = [];
+    jitterPrior.fn = @computeSaccadeJitterPrior;
+    jitterPrior.params = [];
+    jitterPrior.params.saccadeTimes = saccadeTimes;
+
+
+if parallel == 1
+    warning('Make sure you run pctconfig(''hostname'', ''ip'')');
+    mls = matlabpool('size');
+    if mls > 0; matlabpool close; end;
+    matlabpool open 10;
+end
+
+if ~isdir(outDirName); mkdir(outDirName); end;
+save([outDirName,'/params.mat'], 'ALLEEG','setlist', 'chansubset', 'chansubset2', 'trainingwindowlength', 'trainingwindowinterval', 'jitterrange', 'saccadeTimes1', 'saccadeTimes2', 'convergencethreshold', 'LOO', 'bootstrap', 'weightprior');
+
+%% Perform logistic regression (results will be saved in ICA data)
+if bootstrap
+%     disp('---Skipping logistic regression...');
+%     fwdmodel = [];
+else
+    disp('---Performing logistic regression...');
+    [ALLEEG, com, v] = pop_logisticregression_jittered_EM(ALLEEG,setlist,chansubset,chansubset,trainingwindowlength,trainingwindowoffset,regularize,lambda,lambdasearch,eigvalratio,vinit,jitterrange, convergencethreshold,jitterPrior,weightprior);
+    fwdmodel = ALLEEG(setlist(1)).icawinv; % forward model, defined in pop_logisticregression as a=y\x.
+    
+    save([outDirName,'/results_fullmodel2.mat'],'v','trainingwindowlength','jitterrange','trainingwindowoffset','ALLEEG');    
+end
+
+truth = [];
+if LOO
+    %% Perform leave-one-out analysis
+    disp('---Performing LOO analysis...');
+    tic
+    N1 = ALLEEG(setlist(1)).trials;
+    N=ALLEEG(setlist(1)).trials+ALLEEG(setlist(2)).trials;
+
+    ps = cell(N,1);%-1*ones(N,length(trainingwindowoffset));
+    truth = -1*ones(N,1);
+    looALLEEG = cell(N,1);    
+    testsample = cell(N,1);
+    vout = cell(N,1);
+    jitterPriorLoop = cell(N,1);
+    for j=1:N; jitterPriorLoop{j} = jitterPrior; end;
+    jitterPriorTest = cell(N,1);
+    for j=1:N; jitterPriorTest{j} = jitterPrior; end;
+    
+    if parallel == 0
+        ordering = randperm(N);
+    end
+    parfor looi=1:N
+%    for iterNum=1:N
+%        if parallel == 0
+%            looi = ordering(iterNum); 
+%            disp(['LOO #',num2str(iterNum), ' out of ', num2str(N)]);pause(1e-3);
+%        else
+            disp(['LOO #',num2str(looi), ' out of ', num2str(N)]);pause(1e-3);
+%        end;
+%    for looi = 1:N
+%        disp(['LOO #',num2str(looi), ' out of ', num2str(N)]);
+        
+        % create copies
+        looALLEEG{looi}(1) = ALLEEG(setlist(1));
+        looALLEEG{looi}(2) = ALLEEG(setlist(2));
+        % extract testing data and crop training data
+        if looi<=N1
+            testsample{looi} = looALLEEG{looi}(1).data(:,:,looi);
+            truth(looi) = 0;
+            looALLEEG{looi}(1).data = looALLEEG{looi}(1).data(:,:,[1:looi-1 looi+1:end]);         
+            looALLEEG{looi}(1).epoch = looALLEEG{looi}(1).epoch([1:looi-1 looi+1:end]); 
+            looALLEEG{looi}(1).trials = N1-1;
+            
+            % Update the jitter prior saccade times as well
+            jitterPriorLoop{looi}.params.saccadeTimes = [saccadeTimes1([1:looi-1 looi+1:end]),saccadeTimes2];
+            
+            jitterPriorTest{looi}.params.saccadeTimes = saccadeTimes1(looi);
+        else
+            testsample{looi} = looALLEEG{looi}(2).data(:,:,looi-N1);
+            truth(looi) = 1;
+            looALLEEG{looi}(2).data = looALLEEG{looi}(2).data(:,:,[1:looi-N1-1 looi-N1+1:end]);
+            looALLEEG{looi}(2).epoch = looALLEEG{looi}(2).epoch([1:looi-N1-1 looi-N1+1:end]); 
+            looALLEEG{looi}(2).trials = looALLEEG{looi}(2).trials-1;
+            
+            jitterPriorLoop{looi}.params.saccadeTimes = [saccadeTimes1,saccadeTimes2([1:looi-N1-1 looi-N1+1:end])];
+            
+            jitterPriorTest{looi}.params.saccadeTimes = saccadeTimes2(looi-N1);
+        end
+
+        [~,~,vout{looi}] = pop_logisticregression_jittered_EM(looALLEEG{looi}, [1 2], chansubset, chansubset2, trainingwindowlength, trainingwindowoffset, regularize, lambda, lambdasearch, eigvalratio, vinit, jitterrange, convergencethreshold, jitterPriorLoop{looi},weightprior);
+
+        ps{looi} = runTest(testsample{looi},trainingwindowlength,trainingwindowoffset,jitterrange,vout{looi},jitterPriorTest{looi},ALLEEG(setlist(1)).srate);
+        
+%        if parallel == 0
+%            dispRunningResults(ps,truth,trainingwindowoffset);
+%        end
+    end
+    
+    ptmp = ps;
+    p = -1*ones(N,length(trainingwindowoffset));
+    for j=1:N
+        p(j,:) = ptmp{j};
+    end
+        
+    
+    truth=([zeros(ALLEEG(setlist(1)).trials,1); ones(ALLEEG(setlist(2)).trials,1)]);
+%     [Azloo,Ryloo,Rxloo] = rocarea(ploo,truth);
+    for wini = 1:length(trainingwindowoffset)
+        [Azloo(wini),Ryloo,Rxloo] = rocarea(p(:,wini),truth);
+        fprintf('Window Onset: %d; LOO Az: %6.2f\n',trainingwindowoffset(wini),Azloo(wini));
+    end
+
+    if ~isdir(outDirName); mkdir(outDirName); end;
+    save([outDirName,'/results_loo.mat'],'vout','testsample','trainingwindowlength','truth','jitterrange','trainingwindowoffset','p','Azloo');
+    
+    %% Plot LOO Results
+    if ~bootstrap
+        figure; hold on;
+        plot(time,Azloo);
+        plot(get(gca,'XLim'),[0.5 0.5],'k--');
+        plot(get(gca,'XLim'),[0.75 0.75],'k:');
+        ylim([0.3 1]);
+        title('Leave-one-out analysis');
+        xlabel('time (s)');
+        ylabel('LOO Az');
+    end
+    toc
+else
+    Azloo = [];
+end
+
+if parallel == 1
+    matlabpool close;
+end
+
+%% Make TopoMovie figure
+% h = MakeTopoMovie(fwdmodel,time,EEG.chanlocs);
+% ylabel(h.ERP,'Fwd Model');
+end
+
+function p = runTest(testsample,trainingwindowlength,trainingwindowoffset,jitterrange,vout,jitterPrior,srate)
+    p = zeros(1,length(trainingwindowoffset));
+	for wini = 1:length(trainingwindowoffset)
+	    p(wini) = test_logisticregression_jittered_EM(testsample,trainingwindowlength,trainingwindowoffset(wini),jitterrange,vout(wini,:),jitterPrior,srate);
+%	    p(wini)=bernoull(1,y(wini));
+	end
+end
+
+function dispRunningResults(p,truth,trainingwindowoffset)
+    locs = find(sum(p,2)>=0);
+    for wini = 1:length(trainingwindowoffset)
+        [Azloo,Ryloo,rxloo] = rocarea(p(locs,wini),truth(locs));
+        fprintf('Window Onset: %d; LOO Az: %6.2f\n',trainingwindowoffset(wini),Azloo);
+    end
+    return;
+    figure(22);
+    subplot(2,1,1);
+    scatter(locs,p(locs),50,'blue','filled');
+    xlim([1,size(p,1)]);
+    ylim([0 1]);
+    subplot(2,1,2);
+    scatter(locs,truth(locs),50,'blue','filled');
+    xlim([1,size(p,1)]);
+    ylim([0 1]);
+    pause(1);
+end

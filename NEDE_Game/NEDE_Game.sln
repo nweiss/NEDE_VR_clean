@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{65CA2A71-9315-2470-E392-D4C90D5B877A}") = "NEDE_Game", "Assembly-CSharp-firstpass.csproj", "{68278A2E-79FC-D918-A2D4-90D5DF53CA2B}"
+EndProject
+Project("{65CA2A71-9315-2470-E392-D4C90D5B877A}") = "NEDE_Game", "Assembly-CSharp.csproj", "{1FD858F1-ABF6-028D-F8FC-63EB5E9725E1}"
+EndProject
+Project("{65CA2A71-9315-2470-E392-D4C90D5B877A}") = "NEDE_Game", "Assembly-UnityScript.unityproj", "{27C595A0-E7E7-FC65-1776-878DE6DFF96E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68278A2E-79FC-D918-A2D4-90D5DF53CA2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68278A2E-79FC-D918-A2D4-90D5DF53CA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68278A2E-79FC-D918-A2D4-90D5DF53CA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68278A2E-79FC-D918-A2D4-90D5DF53CA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FD858F1-ABF6-028D-F8FC-63EB5E9725E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FD858F1-ABF6-028D-F8FC-63EB5E9725E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FD858F1-ABF6-028D-F8FC-63EB5E9725E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FD858F1-ABF6-028D-F8FC-63EB5E9725E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27C595A0-E7E7-FC65-1776-878DE6DFF96E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27C595A0-E7E7-FC65-1776-878DE6DFF96E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27C595A0-E7E7-FC65-1776-878DE6DFF96E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27C595A0-E7E7-FC65-1776-878DE6DFF96E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal

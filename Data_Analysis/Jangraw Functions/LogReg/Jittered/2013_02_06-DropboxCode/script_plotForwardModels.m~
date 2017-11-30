@@ -1,0 +1,38 @@
+function script_plotForwardModels
+
+fullm = load('results/results_fullmodel2.mat');
+loom = load('results/results_new.mat');
+
+[~,sortinds] = sort(loom.Azloo,'descend');
+
+
+function D = sumprior(prior,trainingwindowlength)
+
+% Calculate the sum of a prior over a shifting training window.
+%
+% D = sumprior(prior,trainingwindowlength)
+% 
+% INPUTS:
+% -prior is an n-element vector, where n is the assumed limit for jitter on
+% a trial (including positive and negative jitters).  prior = 
+% p(t_i|x_i,y_i,v) for the current iteration of logistic regression, where 
+% t=jitter, x=data, y=truth, and v=spatial weights.
+% -trainingwindowlength is the number of samples in each training window -
+% that is, the width of the window over which we want to take a sum.
+% 
+% OUTPUTS:
+% -D is a vector with n+2*(trainingwindowlength-1) elements.  It contains
+% the sum over the training window at that particular jitter.  The first
+% element should equal prior(1), and the last should equal prior(end).
+%
+% Created 3/14/11 by DJ.
+
+% set up
+ntrials = size(prior,1);
+prior_padded = [zeros(ntrials,trainingwindowlength-1), prior, zeros(ntrials,trainingwindowlength-1)];
+D = zeros(ntrials,size(prior,2)+trainingwindowlength-1);
+
+% Take sum
+for k=1:size(D,2)
+    D(:,k) = sum(prior_padded(:,(1:trainingwindowlength)+k-1),2);
+end

@@ -1,0 +1,19 @@
+You are a soldier on patrol.  Your car navigates by itself, but you are in charge of the brakes. 
+
+When the truck in front of you puts on its brake lights, hit your brakes as fast as possible by pressing the A button on the gamepad.
+
+Your car won't actually slow down - your action just signals the car in front of you to speed up again.
+
+<ENDPAGE>
+On this patrol, you've heard that there may be bombs hidden in boxes with <targetString> on them.
+
+At the end of the patrol, you will be asked to report the number of <targetString> boxes that you saw to the bomb squad.
+
+Do not press any buttons or say anything out loud when you see the boxes - instead, try to stay perfectly still and just count internally.
+
+<ENDPAGE>
+The session will end automatically.  
+
+When you are ready to begin, click the button below.
+
+<ENDPAGE>

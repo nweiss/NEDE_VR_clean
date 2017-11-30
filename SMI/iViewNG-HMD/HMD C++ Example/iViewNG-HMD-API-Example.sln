@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "iViewNG-HMD-API-Example", "iViewNG-HMD-API-Example\iViewNG-HMD-API-Example.vcxproj", "{987E1A6B-7DF9-4227-A6B6-F449758D04B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{987E1A6B-7DF9-4227-A6B6-F449758D04B4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{987E1A6B-7DF9-4227-A6B6-F449758D04B4}.Debug|Win32.Build.0 = Debug|Win32
+		{987E1A6B-7DF9-4227-A6B6-F449758D04B4}.Release|Win32.ActiveCfg = Release|Win32
+		{987E1A6B-7DF9-4227-A6B6-F449758D04B4}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
