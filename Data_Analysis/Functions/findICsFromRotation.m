@@ -36,7 +36,7 @@ cov_HRacc_IC_zscore = zscore(abs(covmat(nComps+3,1:nComps)));
 figure
 plot([cov_HRpos_IC_zscore', cov_HRvel_IC_zscore', cov_HRacc_IC_zscore'],'.')
 hold on
-plot([1,nComps],[thresh,thresh],'--');
+plot([1,nComps],[thresh,thresh], '--')
 title('Correlation of ICs to head-rotation')
 legend('position','velocity','acceleration','threshold')
 xlabel('Independant Component Num')
@@ -48,4 +48,3 @@ ICs_from_HRacc = find(cov_HRacc_IC_zscore > thresh);
 
 tmp = union(ICs_from_HRpos, ICs_from_HRvel);
 ICs_from_HR = union(tmp, ICs_from_HRacc);
-

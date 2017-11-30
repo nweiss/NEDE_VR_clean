@@ -34,7 +34,7 @@ head_rotation = abs(head_rotation);
 
 % Update the stimulus type so that (0=distractor,1=target)
 stimulus_type = convertLabels(stimulus_type);
-
+end
 % Shuffle the trials prior to partitioning them into training/testing sets
 % shuffleMap = cell(max(SUBJECTS),1);
 % for i = 1:8

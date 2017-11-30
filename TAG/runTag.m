@@ -44,13 +44,25 @@ while true
        orderedScores = zeros(1,length(outputOrder));
        
        for i = 0:length(outputOrder)-1
-       
-           
+            orderedScores(i+1) = outputScore(outputOrder == i);
        end
        % get the order of the rest of the b
-       
-       
-    
+       counter = 1;
+       unseenOutputOrder = [];
+       for i=1:length(orderedScores)
+           if ismember(outputOrder(i),target_indices)
+               orderedScores(i) = 1;
+           elseif ismember(outputOrder(i), distractor_indices)
+               orderedScores(i) = 0;
+           else 
+               unseenOutputOrder(counter) = outputOrder(i);
+               counter = counter + 1;
+           end
+       end    
        num_classified = num_classified + 1;
+       
+       dlmwrite('../NEDE_Game/interestScores.txt',orderedScores')
+       
+       dlmwrite('../NEDE_Game/newCarPath.txt', unseenOutputOrder')
    end
 end

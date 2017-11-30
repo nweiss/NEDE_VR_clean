@@ -108,7 +108,7 @@ EEGlab.icaact = (EEGlab.icaweights*EEGlab.icasphere)*EEGlab.data(EEGlab.icachans
 if REM_COMPS_FROM_ROTATION
     % CHANGE THE EEG TO EEGlab.icaact. This was only for development
     % version.
-    [ICs_from_HR, cov_HRpos_IC_zscore, cov_HRvel_IC_zscore, cov_HRacc_IC_zscore] = findICsFromRotation(EEGlab.icaact, headRotationAgg, thresh);
+    [ICs_from_HR,cov_HRpos_IC_zscore, cov_HRvel_IC_zscore, cov_HRacc_IC_zscore] = findICsFromRotation(EEGlab.icaact, headRotationAgg, thresh);
 end
 
 if SAVE_ON
@@ -116,7 +116,8 @@ if SAVE_ON
     icasphere = EEGlab.icasphere;
     save_path = fullfile('..','..','..','Dropbox','NEDE_Dropbox','Data',...
         'dim_red_params',['s',num2str(SUBJECT),'_dimredparams.mat']);
-    save(save_path,'pca_coeff','icaweights','icasphere','badChanInd','ICs_from_HR','cov_HRpos_IC_zscore', 'cov_HRvel_IC_zscore','cov_HRacc_IC_zscore');    
+    save(save_path,'pca_coeff','icaweights','icasphere','badChanInd','ICs_from_HR','cov_HRpos_IC_zscore', 'cov_HRvel_IC_zscore', 'cov_HRacc_IC_zscore');
+    
 end
 
 disp('Done')

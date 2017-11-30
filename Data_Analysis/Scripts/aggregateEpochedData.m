@@ -39,7 +39,7 @@ target_category_agg = [];
 subject = [];
 block = [];
 
-for i = SUBJECTS
+for i = 13% SUBJECTS
     for j = 1:BLOCKS(i)
         clear dwell_time
         clear eeg
